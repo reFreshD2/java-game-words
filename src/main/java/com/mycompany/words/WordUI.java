@@ -20,49 +20,41 @@ public class WordUI extends javax.swing.JFrame {
     private ArrayList easy;
     private ArrayList medium;
     private ArrayList hard;
-    private ArrayList library;
     private ArrayList current;
+    private Word word;
     /**
      * Creates new form WordUI
+     * @throws java.io.IOException
      */
-    public WordUI() {
+    public WordUI() throws IOException {
         initComponents();
         init();
     }
     
-    private void init(){
-        easy = new ArrayList<String>();
-        medium = new ArrayList<String>();
-        hard = new ArrayList<String>();
-        library = new ArrayList<String>();
+    private void init() throws FileNotFoundException, IOException{
+        easy = new ArrayList<Word>();
+        medium = new ArrayList<Word>();
+        hard = new ArrayList<Word>();
         current = new ArrayList<String>();
-        hard.add("ромашка");
-        hard.add("снегопад");
-        hard.add("памятник");
-        hard.add("литература");
-        medium.add("вертолет");
-        medium.add("варежки");
-        medium.add("подарок");
-        medium.add("леопард");
-        easy.add("носок");
-        easy.add("конфеты");
-        easy.add("медуза");
-        easy.add("рябина");
-    }
-    
-    private void setLibrary(String word) throws Exception {
-        jLabel2.setText(word);
-        try (FileReader reader = new FileReader(word+".txt")) {
+        try (FileReader reader = new FileReader("слова.txt")) {
             Scanner scanner = new Scanner(reader);
             while (scanner.hasNextLine()) {
-                library.add(scanner.nextLine());
+                String curr = scanner.nextLine();
+                String split[] = curr.split("/");
+                Word currentWord;
+                currentWord = new Word(split[0],split[1]);
+                switch (currentWord.getLevel()) {
+                    case "легкий" -> easy.add(currentWord);
+                    case "средний" -> medium.add(currentWord);
+                    case "сложный" -> hard.add(currentWord);
+                }
             }
             reader.close();
         }
     }
-    
+
     private void setProgress() {
-        double progress = ((double) current.size() / (double) library.size())*100;
+        double progress = ((double) current.size() / (double) word.getLibrary().size())*100;
         jProgressBar1.setValue((int) Math.round(progress));
         jProgressBar1.setString(Double.toString((int) Math.round(progress))+"%");
     }
@@ -85,6 +77,7 @@ public class WordUI extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Words");
@@ -148,6 +141,8 @@ public class WordUI extends javax.swing.JFrame {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
+        jLabel5.setText("Timer");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -182,11 +177,15 @@ public class WordUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(195, 195, 195)
+                .addComponent(jLabel5)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(16, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -202,31 +201,29 @@ public class WordUI extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jButton3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addComponent(jLabel5))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            // TODO add your handling code here:
-            jButton1.setEnabled(false);
-            jComboBox1.setEnabled(false);
-            jButton2.setEnabled(true);
-            jButton3.setEnabled(true);
-            jTextField1.setEnabled(true);
-            String lvl = (String) jComboBox1.getSelectedItem();
-            Random random = new Random();
-            switch (lvl) {
-                case "Легкий" -> setLibrary((String) easy.get(random.nextInt(easy.size())));
-                case "Средний" -> setLibrary((String) medium.get(random.nextInt(medium.size())));
-                case "Сложный" -> setLibrary((String) hard.get(random.nextInt(hard.size())));
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(WordUI.class.getName()).log(Level.SEVERE, null, ex);    
+        // TODO add your handling code here:
+        jButton1.setEnabled(false);
+        jComboBox1.setEnabled(false);
+        jButton2.setEnabled(true);
+        jButton3.setEnabled(true);
+        jTextField1.setEnabled(true);
+        String lvl = (String) jComboBox1.getSelectedItem();
+        Random random = new Random();
+        switch (lvl) {
+            case "Легкий" -> this.word = (Word) easy.get(random.nextInt(easy.size()));
+            case "Средний" -> this.word = (Word) medium.get(random.nextInt(easy.size()));
+            case "Сложный" -> this.word = (Word) hard.get(random.nextInt(easy.size()));    
         }
+        jLabel2.setText(word.getWord());
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -236,12 +233,12 @@ public class WordUI extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        String word = jTextField1.getText();
-        if (current.contains(word)) {
+        String currentWord = jTextField1.getText();
+        if (current.contains(currentWord)) {
             jLabel4.setText("Данное слово уже было введено");
         }
-        else if (library.contains(word)){
-           current.add(word);
+        else if (this.word.getLibrary().contains(currentWord)){
+           current.add(currentWord);
            setProgress();
            jLabel4.setText("");
         } else {
@@ -259,7 +256,6 @@ public class WordUI extends javax.swing.JFrame {
         jLabel2.setText("");
         jProgressBar1.setValue(0);
         jProgressBar1.setString("0 %");
-        library.clear();
         current.clear();
         jButton3.setEnabled(false);
         jTextField1.setEnabled(false);
@@ -294,8 +290,13 @@ public class WordUI extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new WordUI().setVisible(true);
+                try {
+                    new WordUI().setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(WordUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
@@ -309,6 +310,7 @@ public class WordUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
